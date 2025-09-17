@@ -30,6 +30,8 @@ export const TuitionCard: React.FC<TuitionCardProps> = ({
   onMessage,
   onRequest,
 }) => {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
   return (
     <div className="card-pixel hover:shadow-lg transition-shadow duration-200">
       <div className="flex items-start gap-6">
@@ -79,7 +81,10 @@ export const TuitionCard: React.FC<TuitionCardProps> = ({
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <User size={16} />
-              <span>{tuition.user.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{tuition.user.avatar || '👤'}</span>
+                <span>{tuition.user.name}</span>
+              </div>
             </div>
           </div>
 

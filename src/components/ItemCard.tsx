@@ -35,6 +35,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   onWishlist,
   isWishlisted = false,
 }) => {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case "donate":
@@ -140,7 +142,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({
             </div>
             <div className="flex items-center gap-2">
               <User size={16} />
-              <span>{item.user.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{item.user.avatar || '👤'}</span>
+                <span>{item.user.name}</span>
+              </div>
             </div>
           </div>
 

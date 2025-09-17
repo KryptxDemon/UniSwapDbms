@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell } from "lucide-react";
+import { NotificationBell } from "./NotificationBell";
 
 interface HeaderProps {
   title: string;
@@ -24,9 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {showNotifications && (
-        <button className="icon-pixel hover:scale-110 transition-transform p-3 bg-background rounded-lg hover:bg-accent">
-          <Bell size={24} />
-        </button>
+        <NotificationBell />
       )}
     </header>
   );

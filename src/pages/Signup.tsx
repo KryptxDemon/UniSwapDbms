@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserPlus, Mail, Lock, User, Phone } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Phone, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import graduationIcon from '@/assets/icons/graduation-icon.png';
 
 export const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +11,7 @@ export const Signup: React.FC = () => {
     email: '',
     password: '',
     phone: '',
+    studentId: '',
   });
   const navigate = useNavigate();
 
@@ -37,11 +37,9 @@ export const Signup: React.FC = () => {
       <div className="card-pixel w-full max-w-md">
         <div className="text-center mb-8">
           <div className="float-animation mx-auto mb-4 w-20 h-20">
-            <img 
-              src={graduationIcon} 
-              alt="Join UniSwap" 
-              className="w-full h-full object-contain"
-            />
+            <div className="w-full h-full bg-gradient-to-br from-pink-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+              <GraduationCap className="text-white" size={32} />
+            </div>
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Join UniSwap!</h1>
           <p className="text-muted-foreground">Start your campus exchange journey</p>
@@ -77,6 +75,23 @@ export const Signup: React.FC = () => {
                 onChange={handleChange}
                 className="input-cute pl-10"
                 placeholder="your.email@university.edu"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="studentId" className="text-sm font-medium">Student ID</Label>
+            <div className="relative">
+              <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+              <Input
+                id="studentId"
+                name="studentId"
+                type="text"
+                value={formData.studentId}
+                onChange={handleChange}
+                className="input-cute pl-10"
+                placeholder="e.g., 2024001234"
                 required
               />
             </div>
