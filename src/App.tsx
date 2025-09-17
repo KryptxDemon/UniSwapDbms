@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { LandingPage } from "./pages/LandingPage";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
@@ -14,6 +15,8 @@ import { PostTuition } from "./pages/PostTuition";
 import { Profile } from "./pages/Profile";
 import { Wishlist } from "./pages/Wishlist";
 import { Messages } from "./pages/Messages";
+import { MyPosts } from "./pages/MyPosts";
+import { BorrowHistory } from "./pages/BorrowHistory";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +28,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -34,6 +38,8 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/messages" element={<Messages />} />
+          <Route path="/my-posts" element={<MyPosts />} />
+          <Route path="/borrow-history" element={<BorrowHistory />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

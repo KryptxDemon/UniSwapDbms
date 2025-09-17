@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LandingPage } from './LandingPage';
 import { Home } from './Home';
-import { Login } from './Login';
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
@@ -27,7 +27,7 @@ const Index = () => {
   }
 
   if (!user) {
-    return <Login />;
+    return <LandingPage />;
   }
 
   return <Home />;

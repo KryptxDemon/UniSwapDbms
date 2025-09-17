@@ -1,6 +1,6 @@
 import React from "react";
 import { Edit, LogOut, Package, Heart, MessageCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -74,21 +74,25 @@ export const Profile: React.FC = () => {
 
         {/* Menu Options */}
         <div className="space-y-2">
-          <button className="w-full card-pixel text-left hover:scale-[1.02] transition-all">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-foreground">My Posts</span>
-              <span className="text-muted-foreground">→</span>
+          <Link to="/my-posts" className="block">
+            <div className="w-full card-pixel text-left hover:scale-[1.02] transition-all">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-foreground">My Posts</span>
+                <span className="text-muted-foreground">→</span>
+              </div>
             </div>
-          </button>
+          </Link>
 
-          <button className="w-full card-pixel text-left hover:scale-[1.02] transition-all">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-foreground">
-                Borrow History
-              </span>
-              <span className="text-muted-foreground">→</span>
+          <Link to="/borrow-history" className="block">
+            <div className="w-full card-pixel text-left hover:scale-[1.02] transition-all">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-foreground">
+                  Borrow History
+                </span>
+                <span className="text-muted-foreground">→</span>
+              </div>
             </div>
-          </button>
+          </Link>
 
           <button className="w-full card-pixel text-left hover:scale-[1.02] transition-all">
             <div className="flex items-center justify-between">
