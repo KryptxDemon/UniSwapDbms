@@ -1,6 +1,9 @@
 import React from "react";
-import { MapPin, Clock, DollarSign, Calendar, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MapPin, Clock, DollarSign, Calendar, User, BookOpen, BadgeCheck } from "lucide-react";
+import { CardActions } from "./CardActions";
+import { Badge } from "./ui/badge";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 
 export interface Tuition {
   id: string;
@@ -10,6 +13,7 @@ export interface Tuition {
   subject: string;
   location: string;
   description?: string;
+  phoneNumber: string;
   user: {
     id: string;
     name: string;
@@ -17,21 +21,44 @@ export interface Tuition {
   };
   createdAt: string;
   status: "available" | "taken" | "paused";
+  wishlistNotes?: string;
 }
 
 interface TuitionCardProps {
   tuition: Tuition;
-  onMessage: (tuitionId: string) => void;
-  onRequest: (tuitionId: string) => void;
+  onWishlistUpdate?: (tuitionId: string, notes: string) => void;
 }
+
+const getStatusColor = (status: Tuition['status']) => {
+  switch (status) {
+    case 'available':
+      return 'bg-green-500/10 text-green-500 border-green-500/50';
+    case 'taken':
+      return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/50';
+    case 'paused':
+      return 'bg-gray-500/10 text-gray-500 border-gray-500/50';
+    default:
+      return 'bg-gray-500/10 text-gray-500 border-gray-500/50';
+  }
+};
+
+const getStatusIcon = (status: Tuition['status']) => {
+  switch (status) {
+    case 'available':
+      return <BadgeCheck className="h-4 w-4" />;
+    case 'taken':
+      return <Clock className="h-4 w-4" />;
+    case 'paused':
+      return <Clock className="h-4 w-4" />;
+    default:
+      return <Clock className="h-4 w-4" />;
+  }
+};
 
 export const TuitionCard: React.FC<TuitionCardProps> = ({
   tuition,
-  onMessage,
-  onRequest,
+  onWishlistUpdate,
 }) => {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-
   return (
     <div className="card-pixel hover:shadow-lg transition-shadow duration-200">
       <div className="flex items-start gap-6">
@@ -40,10 +67,27 @@ export const TuitionCard: React.FC<TuitionCardProps> = ({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-foreground text-lg mb-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge
+                  className={cn(
+                    "px-2 py-1 text-xs font-pixel border",
+                    getStatusColor(tuition.status)
+                  )}
+                >
+                  <span className="flex items-center gap-1">
+                    {getStatusIcon(tuition.status)}
+                    {tuition.status.charAt(0).toUpperCase() + tuition.status.slice(1)}
+                  </span>
+                </Badge>
+              </div>
+              <h3 className="font-semibold text-foreground text-lg mb-1 flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
                 {tuition.subject}
+                <span className="text-sm text-muted-foreground font-pixel">
+                  (Class {tuition.class})
+                </span>
               </h3>
               <p className="text-muted-foreground">Teaching {tuition.class}</p>
             </div>
@@ -95,20 +139,15 @@ export const TuitionCard: React.FC<TuitionCardProps> = ({
             </span>
           </div>
 
-          <div className="flex gap-3">
-            <Button
-              className="btn-secondary flex-1 max-w-32"
-              onClick={() => onMessage(tuition.id)}
-            >
-              Message
-            </Button>
-            <Button
-              className="btn-primary flex-1 max-w-32"
-              onClick={() => onRequest(tuition.id)}
-              disabled={tuition.status !== "available"}
-            >
-              Apply
-            </Button>
+          <div className="mt-4">
+            <CardActions
+              itemTitle={tuition.subject}
+              itemId={tuition.id}
+              phoneNumber={tuition.phoneNumber}
+              posterName={tuition.user.name}
+              existingWishlistNotes={tuition.wishlistNotes}
+              onWishlistSave={(notes) => onWishlistUpdate?.(tuition.id, notes)}
+            />
           </div>
         </div>
       </div>
