@@ -4,23 +4,25 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useTheme } from '@/components/theme/theme-provider';
 
 interface ContactAdminDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  user: any;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export const ContactAdminDialog: React.FC<ContactAdminDialogProps> = ({
-  isOpen,
-  onClose,
-  user,
+  open,
+  onOpenChange,
 }) => {
+  const [user] = React.useState(() => JSON.parse(localStorage.getItem("user") || "null"));
   const [formData, setFormData] = useState({
     subject: '',
     message: '',
     priority: 'normal',
   });
+
+  const { theme } = useTheme();
 
   const handleSend = () => {
     if (!formData.subject.trim() || !formData.message.trim()) {
@@ -30,18 +32,17 @@ export const ContactAdminDialog: React.FC<ContactAdminDialogProps> = ({
 
     // Mock sending message to admin
     console.log('Sending message to admin:', {
-      from: user.email,
       ...formData,
       timestamp: new Date().toISOString(),
     });
 
     alert('Message sent to admin successfully! 📧');
     setFormData({ subject: '', message: '', priority: 'normal' });
-    onClose();
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+          <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold pixel-font text-center">
@@ -114,7 +115,7 @@ export const ContactAdminDialog: React.FC<ContactAdminDialogProps> = ({
         </div>
 
         <div className="flex gap-3 mt-6">
-          <Button onClick={onClose} variant="outline" className="flex-1">
+          <Button onClick={() => onOpenChange(false)} variant="outline" className="flex-1">
             Cancel
           </Button>
           <Button onClick={handleSend} className="btn-primary flex-1">

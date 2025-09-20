@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Home,
@@ -9,6 +9,7 @@ import {
   Shield,
   BookOpen,
 } from "lucide-react";
+import { StudentProfileDialog } from "./StudentProfileDialog";
 
 interface NavigationProps {
   user?: { role: "student" | "admin" } | null;
@@ -16,6 +17,7 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({ user }) => {
   const location = useLocation();
+  const [showProfile, setShowProfile] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -24,7 +26,6 @@ export const Navigation: React.FC<NavigationProps> = ({ user }) => {
     { icon: Plus, label: "Post", path: "/post" },
     { icon: MessageCircle, label: "Messages", path: "/messages" },
     { icon: Heart, label: "Wishlist", path: "/wishlist" },
-    { icon: User, label: "Profile", path: "/profile" },
   ];
 
   if (user?.role === "admin") {
@@ -69,23 +70,33 @@ export const Navigation: React.FC<NavigationProps> = ({ user }) => {
 
       {/* User Info */}
       {user && (
-        <div className="absolute bottom-6 left-6 right-6">
-          <div className="p-4 bg-accent rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <User size={20} className="text-primary-foreground" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  Student User
-                </p>
-                <p className="text-xs text-muted-foreground capitalize">
-                  {user.role}
-                </p>
+        <>
+          <div className="absolute bottom-6 left-6 right-6">
+            <div 
+              className="p-4 bg-primary/10 rounded-lg cursor-pointer hover:bg-primary/20 transition-colors"
+              onClick={() => setShowProfile(true)}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                  <User size={20} className="text-primary-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    Student User
+                  </p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {user.role}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+
+          <StudentProfileDialog
+            open={showProfile}
+            onOpenChange={setShowProfile}
+          />
+        </>
       )}
     </nav>
   );

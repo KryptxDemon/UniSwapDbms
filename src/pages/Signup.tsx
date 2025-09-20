@@ -4,6 +4,9 @@ import { UserPlus, Mail, Lock, User, Phone, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
+import { auth } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 
 export const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -22,14 +25,80 @@ export const Signup: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock signup - in real app would create user account
-    localStorage.setItem('user', JSON.stringify({ 
-      ...formData, 
-      role: 'student' 
-    }));
-    navigate('/');
+    setIsLoading(true);
+
+    try {
+      // Create Firebase account
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+
+      // Send verification email
+      await sendEmailVerification(userCredential.user);
+
+      // Save additional user data to localStorage with proper structure
+      const userData = {
+        id: userCredential.user.uid,
+        name: formData.name,
+        email: formData.email,
+        studentId: formData.studentId, // Save student ID
+        phoneNumber: formData.phone, // Save phone number
+        phoneNumbers: { 
+          primary: formData.phone, 
+          secondary: '' 
+        }, // For EditProfile compatibility
+        avatar: '👤',
+        uid: userCredential.user.uid,
+        role: 'student',
+        emailVerified: false,
+        department: '', // Can be set later in profile
+        createdAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      toast({
+        title: "Account created successfully!",
+        description: "Please check your email to verify your account before logging in.",
+      });
+
+      // Navigate to login page
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      
+      let errorMessage = "Failed to create account. Please try again.";
+      
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = "This email is already registered. Please try logging in instead.";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "Please enter a valid email address.";
+          break;
+        case 'auth/weak-password':
+          errorMessage = "Password is too weak. Please use at least 6 characters.";
+          break;
+        case 'auth/operation-not-allowed':
+          errorMessage = "Email/password accounts are not enabled. Please contact support.";
+          break;
+      }
+
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: errorMessage
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -130,9 +199,9 @@ export const Signup: React.FC = () => {
             </div>
           </div>
 
-          <Button type="submit" className="btn-primary w-full">
+          <Button type="submit" className="btn-primary w-full" disabled={isLoading}>
             <UserPlus size={18} className="mr-2" />
-            Create Account
+            {isLoading ? "Creating Account..." : "Create Account"}
           </Button>
         </form>
 

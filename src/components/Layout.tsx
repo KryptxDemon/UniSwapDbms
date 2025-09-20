@@ -1,6 +1,5 @@
 import React from "react";
 import { Navigation } from "./Navigation";
-import { ThemeProvider } from "./theme/theme-provider";
 import { ThemeToggle } from "./theme/theme-toggle";
 
 interface LayoutProps {
@@ -10,18 +9,16 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="uniswap-theme">
-      <div className="min-h-screen bg-background flex">
-        <Navigation user={user} />
-        <main className="flex-1 ml-64 px-8 py-6 max-w-none">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-end mb-4">
-              <ThemeToggle />
-            </div>
-            {children}
+    <div className="min-h-screen bg-background flex">
+      <Navigation user={user} />
+      <main className="flex-1 ml-64 px-8 py-6 max-w-none">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-end mb-4">
+            <ThemeToggle />
           </div>
-        </main>
-      </div>
-    </ThemeProvider>
+          {children}
+        </div>
+      </main>
+    </div>
   );
 };

@@ -1,34 +1,62 @@
 import React, { useState } from 'react';
-import { User, Phone, Lock, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
+import { User, Phone, Lock, Plus, Trash2, Eye, EyeOff, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AvatarSelector } from './AvatarSelector';
+import { VerifyPasswordDialog } from './dialogs/VerifyPasswordDialog';
 
 interface EditProfileDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  user: any;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSave: (updatedUser: any) => void;
 }
 
 export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
-  isOpen,
-  onClose,
-  user,
+  open,
+  onOpenChange,
   onSave,
 }) => {
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phones: user?.phones || [user?.phone || ''].filter(Boolean),
-    password: '',
-    confirmPassword: '',
-    avatar: user?.avatar || '👤',
+  const [formData, setFormData] = useState(() => {
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    return {
+      name: userData?.name || '',
+      email: userData?.email || '',
+      studentId: userData?.studentId || '', // Add student ID
+      phones: userData?.phoneNumbers ? 
+        [userData.phoneNumbers.primary, userData.phoneNumbers.secondary].filter(Boolean) :
+        userData?.phones || [userData?.phoneNumber || ''].filter(Boolean),
+      password: '',
+      confirmPassword: '',
+      avatar: userData?.avatar || '👤',
+    };
   });
+
+  // Reset form when dialog opens/closes
+  React.useEffect(() => {
+    if (!open) {
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      setFormData({
+        name: userData?.name || '',
+        email: userData?.email || '',
+        studentId: userData?.studentId || '', // Reset student ID
+        phones: userData?.phoneNumbers ? 
+          [userData.phoneNumbers.primary, userData.phoneNumbers.secondary].filter(Boolean) :
+          userData?.phones || [userData?.phoneNumber || ''].filter(Boolean),
+        password: '',
+        confirmPassword: '',
+        avatar: userData?.avatar || '👤',
+      });
+      setIsPasswordVerified(false);
+      setShowVerifyDialog(false);
+      setShowPassword(false);
+    }
+  }, [open]);
   const [showPassword, setShowPassword] = useState(false);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
 
   const handleAddPhone = () => {
     setFormData(prev => ({
@@ -52,26 +80,55 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
   };
 
   const handleSave = () => {
-    if (formData.password && formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
-      return;
+    if (formData.password) {
+      if (!isPasswordVerified) {
+        setShowVerifyDialog(true);
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+      }
     }
 
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    // Prevent student ID changes if it's already set
+    const finalStudentId = currentUser.studentId && currentUser.studentId.trim() !== '' 
+      ? currentUser.studentId 
+      : formData.studentId;
+
     const updatedUser = {
-      ...user,
+      ...currentUser,
       name: formData.name,
-      phones: formData.phones.filter(phone => phone.trim() !== ''),
+      studentId: finalStudentId, // Save student ID (unchangeable once set)
+      phoneNumber: formData.phones[0] || '', // Primary phone as main phone
+      phoneNumbers: {
+        primary: formData.phones[0] || '',
+        secondary: formData.phones[1] || ''
+      }, // Structured phone numbers
+      phones: formData.phones.filter(phone => phone.trim() !== ''), // Keep old format for compatibility
       avatar: formData.avatar,
       ...(formData.password && { password: formData.password }),
     };
 
+    // Also save to persistent storage for logout persistence
+    const persistentData = {
+      phoneNumber: updatedUser.phoneNumber,
+      phoneNumbers: updatedUser.phoneNumbers,
+      studentId: updatedUser.studentId,
+      name: updatedUser.name,
+      avatar: updatedUser.avatar
+    };
+    localStorage.setItem('persistentProfile', JSON.stringify(persistentData));
+
     onSave(updatedUser);
-    onClose();
+    onOpenChange(false);
   };
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold pixel-font text-center">
@@ -124,6 +181,35 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
               <p className="text-xs text-muted-foreground">Email cannot be changed</p>
             </div>
 
+            {/* Student ID (readonly once set) */}
+            <div className="space-y-2">
+              <Label htmlFor="studentId" className="text-sm font-medium">Student ID</Label>
+              <div className="relative">
+                <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                <Input
+                  id="studentId"
+                  value={formData.studentId || ''}
+                  onChange={(e) => {
+                    // Only allow changes if student ID is not set yet
+                    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                    if (!currentUser.studentId || currentUser.studentId.trim() === '') {
+                      setFormData(prev => ({ ...prev, studentId: e.target.value }));
+                    }
+                  }}
+                  className={`input-cute pl-10 ${
+                    formData.studentId ? 'bg-muted' : ''
+                  }`}
+                  placeholder={formData.studentId ? '' : "Enter your student ID"}
+                  disabled={!!(formData.studentId && formData.studentId.trim() !== '')}
+                />
+              </div>
+              {formData.studentId && formData.studentId.trim() !== '' ? (
+                <p className="text-xs text-muted-foreground">🔒 Student ID cannot be changed once set</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">⚠️ Student ID cannot be changed once saved</p>
+              )}
+            </div>
+
             {/* Phone Numbers */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -170,7 +256,13 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) => {
+                    const newPassword = e.target.value;
+                    if (newPassword && !isPasswordVerified) {
+                      setShowVerifyDialog(true);
+                    }
+                    setFormData(prev => ({ ...prev, password: newPassword }));
+                  }}
                   className="input-cute pl-10 pr-10"
                   placeholder="Leave blank to keep current"
                 />
@@ -204,7 +296,7 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
           </div>
 
           <div className="flex gap-3 mt-6">
-            <Button onClick={onClose} variant="outline" className="flex-1">
+            <Button onClick={() => onOpenChange(false)} variant="outline" className="flex-1">
               Cancel
             </Button>
             <Button onClick={handleSave} className="btn-primary flex-1">
@@ -219,6 +311,18 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
         onClose={() => setShowAvatarSelector(false)}
         currentAvatar={formData.avatar}
         onSelectAvatar={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
+      />
+
+      <VerifyPasswordDialog
+        open={showVerifyDialog}
+        onOpenChange={setShowVerifyDialog}
+        onVerify={(verified) => {
+          if (verified) {
+            setIsPasswordVerified(true);
+          } else {
+            setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
+          }
+        }}
       />
     </>
   );
